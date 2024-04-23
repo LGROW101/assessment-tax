@@ -2,6 +2,7 @@ package model
 
 import (
 	"errors"
+	"time"
 
 	"gorm.io/gorm"
 )
@@ -15,8 +16,10 @@ type TaxCalculation struct {
 	KReceipt          float64     `db:"k_receipt"`
 	Tax               float64     `db:"tax"`
 	TaxPayable        float64     `db:"tax_payable"`
+	TaxRefund         float64     `json:"taxRefund"`
 	TaxLevel          []TaxRate   `gorm:"-" json:"taxLevel"`
 	Allowances        []Allowance `json:"allowances"`
+	CreatedAt         time.Time   `json:"createdAt"`
 }
 type TaxRate struct {
 	Level string  `json:"level"`
