@@ -1,4 +1,4 @@
-// admin
+// repository/admin.go
 package repository
 
 import (
@@ -10,6 +10,7 @@ import (
 type AdminRepository interface {
 	GetConfig() (*model.AdminConfig, error)
 	UpdateConfig(config *model.AdminConfig) error
+	InsertConfig(config *model.AdminConfig) error // เพิ่มบร
 }
 
 type adminRepository struct {
@@ -42,8 +43,17 @@ func (r *adminRepository) GetConfig() (*model.AdminConfig, error) {
 func (r *adminRepository) UpdateConfig(config *model.AdminConfig) error {
 	query := `
         UPDATE admin_configs
-        SET personal_deduction = $1, k_receipt = $2
-        WHERE id = (SELECT id FROM admin_configs ORDER BY id DESC LIMIT 1)
+        SET personal_deduction = $1, k_receipt = $2, updated_at = NOW()
+        WHERE id = 1
+    `
+	_, err := r.db.Exec(query, config.PersonalDeduction, config.KReceipt)
+	return err
+}
+
+func (r *adminRepository) InsertConfig(config *model.AdminConfig) error {
+	query := `
+        INSERT INTO admin_configs (personal_deduction, k_receipt)
+        VALUES ($1, $2)
     `
 	_, err := r.db.Exec(query, config.PersonalDeduction, config.KReceipt)
 	return err

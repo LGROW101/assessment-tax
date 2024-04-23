@@ -63,10 +63,9 @@ func main() {
 
 	e.GET("tax/calculations", calculatorHandler.GetAllCalculations)
 
-	e.GET("/admin/configs", adminHandler.GetConfig)
-	e.POST("/admin/config", adminHandler.GetConfig)
+	e.GET("/admin/deductions", adminHandler.GetConfig)
 
-	e.POST("/admin", adminHandler.UpdateConfig, middleware.BasicAuth(func(username, password string, c echo.Context) (bool, error) {
+	e.POST("/admin/deductions", adminHandler.UpdateConfig, middleware.BasicAuth(func(username, password string, c echo.Context) (bool, error) {
 		return username == cfg.AdminUsername && password == cfg.AdminPassword, nil
 	}))
 
