@@ -20,9 +20,10 @@ func NewCalculatorHandler(taxCalculatorService service.TaxCalculatorService) *Ca
 }
 
 type CalculateTaxRequest struct {
-	TotalIncome float64           `json:"totalIncome"`
-	WHT         float64           `json:"wht"`
-	Allowances  []model.Allowance `json:"allowances"`
+	TotalIncome     float64           `json:"totalIncome"`
+	WHT             float64           `json:"wht"`
+	Allowances      []model.Allowance `json:"allowances"`
+	IncludeTaxLevel bool              `json:"includeTaxLevel"`
 }
 
 func (h *CalculatorHandler) CalculateTax(c echo.Context) error {
@@ -41,6 +42,10 @@ func (h *CalculatorHandler) CalculateTax(c echo.Context) error {
 	}
 	response := map[string]interface{}{
 		"tax": taxCalculation.TaxPayable,
+	}
+
+	if req.IncludeTaxLevel {
+		response["taxLevel"] = taxCalculation.TaxLevel
 	}
 
 	return c.JSON(http.StatusOK, response)
