@@ -18,7 +18,6 @@ func (s *TaxCalculatorService) CalculateTax(req *model.TaxCalculationRequest) (*
 	}
 
 	netIncome := req.TotalIncome - personalAllowance - donationAllowance
-
 	var tax float64
 	switch {
 	case netIncome <= 150000:
@@ -31,6 +30,15 @@ func (s *TaxCalculatorService) CalculateTax(req *model.TaxCalculationRequest) (*
 		tax = 110000 + (netIncome-1000000)*0.2
 	default:
 		tax = 310000 + (netIncome-2000000)*0.35
+	}
+
+	// ตรวจสอบว่าภาษีที่คำนวณได้มากกว่าภาษีที่หัก ณ ที่จ่ายหรือไม่
+	if tax > req.WHT {
+		// ถ้ามากกว่า ให้ลดภาษีที่ต้องจ่ายลงด้วยจำนวนภาษีที่หัก ณ ที่จ่าย
+		tax -= req.WHT
+	} else {
+		// ถ้าน้อยกว่าหรือเท่ากัน แสดงว่าได้หักภาษี ณ ที่จ่ายครบแล้ว ไม่ต้องจ่ายภาษีเพิ่ม
+		tax = 0
 	}
 
 	return &model.TaxCalculationResponse{Tax: tax}, nil
