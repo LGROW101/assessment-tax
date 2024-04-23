@@ -1,4 +1,5 @@
-package databases
+// migration
+package main
 
 import (
 	"log"
