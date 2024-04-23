@@ -1,0 +1,38 @@
+version: "3"
+
+services:
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    environment:
+      - PORT=${PORT}
+      - DATABASE_URL=${DATABASE_URL}
+      - ADMIN_USERNAME=${ADMIN_USERNAME}
+      - ADMIN_PASSWORD=${ADMIN_PASSWORD}
+    depends_on:
+      - postgres
+    restart: always
+    networks:
+      - app-network
+
+  postgres:
+    image: postgres:16
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: ktaxes
+    ports:
+      - "5432:5432"
+    networks:
+      - app-network
+
+volumes:
+  db_data:
+
+networks:
+  app-network:
