@@ -24,7 +24,7 @@ VALUES
 CREATE TABLE
     tax_calculations (
         id SERIAL PRIMARY KEY,
-        income DECIMAL(10, 2) NOT NULL,
+        totalIncome DECIMAL(10, 2) NOT NULL,
         wht DECIMAL(10, 2) NOT NULL DEFAULT '0.00',
         personal_allowance DECIMAL(10, 2) NOT NULL DEFAULT '60000.00',
         donation DECIMAL(10, 2) NOT NULL DEFAULT '0.00',
