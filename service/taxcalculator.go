@@ -1,6 +1,8 @@
 package service
 
 import (
+	"math"
+
 	"github.com/LGROW101/assessment-tax/model"
 	"github.com/LGROW101/assessment-tax/repository"
 )
@@ -26,11 +28,11 @@ func (s *taxCalculatorService) GetAllCalculations() ([]*model.TaxCalculation, er
 }
 
 func (s *taxCalculatorService) CalculateTax(totalIncome, wht float64, allowances []model.Allowance) (*model.TaxCalculation, error) {
-
-	config, err := s.adminSvc.GetConfig() // Use the GetConfig method from the AdminServiceInterface
+	config, err := s.adminSvc.GetConfig()
 	if err != nil {
 		return nil, err
 	}
+
 	// Set default values if not provided
 	personalAllowance := config.PersonalDeduction
 	donation := 0.0
@@ -39,15 +41,9 @@ func (s *taxCalculatorService) CalculateTax(totalIncome, wht float64, allowances
 	for _, allowance := range allowances {
 		switch allowance.AllowanceType {
 		case "donation":
-			donation = allowance.Amount
-			if donation > 100000 {
-				donation = 100000
-			}
+			donation = math.Min(allowance.Amount, 100000)
 		case "k-receipt":
-			kReceipt = allowance.Amount
-			if kReceipt > config.KReceipt {
-				kReceipt = config.KReceipt
-			}
+			kReceipt = math.Min(allowance.Amount, config.KReceipt)
 		}
 	}
 
@@ -57,29 +53,24 @@ func (s *taxCalculatorService) CalculateTax(totalIncome, wht float64, allowances
 	// Calculate tax
 	var tax float64
 	switch {
-	case taxableIncome <= 0:
-		tax = 0
 	case taxableIncome <= 150000:
-		tax = taxableIncome * 0.05
-	case taxableIncome <= 300000:
-		tax = 7500 + (taxableIncome-150000)*0.05
+		tax = 0
 	case taxableIncome <= 500000:
-		tax = 15000 + (taxableIncome-300000)*0.10
-	case taxableIncome <= 750000:
-		tax = 35000 + (taxableIncome-500000)*0.15
+		tax = (taxableIncome - 150000) * 0.1
 	case taxableIncome <= 1000000:
-		tax = 57500 + (taxableIncome-750000)*0.20
+		tax = 35000 + (taxableIncome-500000)*0.15
 	case taxableIncome <= 2000000:
-		tax = 107500 + (taxableIncome-1000000)*0.25
-	case taxableIncome <= 5000000:
-		tax = 357500 + (taxableIncome-2000000)*0.30
+		tax = 110000 + (taxableIncome-1000000)*0.2
 	default:
-		tax = 1257500 + (taxableIncome-5000000)*0.35
+		tax = 310000 + (taxableIncome-2000000)*0.35
 	}
 
-	taxPayable := tax - wht
-	if taxPayable < 0 {
-		taxPayable = 0
+	taxPayable := math.Max(tax-wht, 0)
+
+	// Calculate tax refund
+	var taxRefund float64
+	if tax < wht {
+		taxRefund = wht - tax
 	}
 
 	// Calculate tax levels
@@ -110,8 +101,9 @@ func (s *taxCalculatorService) CalculateTax(totalIncome, wht float64, allowances
 		PersonalAllowance: personalAllowance,
 		Donation:          donation,
 		KReceipt:          kReceipt,
-		Tax:               taxPayable,
+		Tax:               tax,
 		TaxPayable:        taxPayable,
+		TaxRefund:         taxRefund,
 		TaxLevel:          taxLevel,
 	}
 

@@ -82,6 +82,7 @@ func (r *taxRepository) GetAllCalculations() ([]*model.TaxCalculation, error) {
 			&taxCalculation.Donation,
 			&taxCalculation.KReceipt,
 			&taxCalculation.Tax,
+			&taxCalculation.CreatedAt,
 		)
 		if err != nil {
 			return nil, err
