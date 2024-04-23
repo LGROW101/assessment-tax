@@ -82,6 +82,28 @@ func (s *taxCalculatorService) CalculateTax(totalIncome, wht float64, allowances
 		taxPayable = 0
 	}
 
+	// Calculate tax levels
+	taxLevel := []model.TaxRate{
+		{Level: "0-150,000", Tax: 0},
+		{Level: "150,001-500,000", Tax: 0},
+		{Level: "500,001-1,000,000", Tax: 0},
+		{Level: "1,000,001-2,000,000", Tax: 0},
+		{Level: "2,000,001 ขึ้นไป", Tax: 0},
+	}
+
+	switch {
+	case taxableIncome <= 150000:
+		taxLevel[0].Tax = taxPayable
+	case taxableIncome <= 500000:
+		taxLevel[1].Tax = taxPayable
+	case taxableIncome <= 1000000:
+		taxLevel[2].Tax = taxPayable
+	case taxableIncome <= 2000000:
+		taxLevel[3].Tax = taxPayable
+	default:
+		taxLevel[4].Tax = taxPayable
+	}
+
 	taxCalculation := &model.TaxCalculation{
 		TotalIncome:       totalIncome,
 		WHT:               wht,
@@ -90,6 +112,7 @@ func (s *taxCalculatorService) CalculateTax(totalIncome, wht float64, allowances
 		KReceipt:          kReceipt,
 		Tax:               taxPayable,
 		TaxPayable:        taxPayable,
+		TaxLevel:          taxLevel,
 	}
 
 	err = s.taxRepo.Save(taxCalculation)

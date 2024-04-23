@@ -15,6 +15,7 @@ type TaxCalculation struct {
 	KReceipt          float64     `db:"k_receipt"`
 	Tax               float64     `db:"tax"`
 	TaxPayable        float64     `db:"tax_payable"`
+	TaxLevel          []TaxRate   `gorm:"-" json:"taxLevel"`
 	Allowances        []Allowance `json:"allowances"`
 }
 type TaxRate struct {
