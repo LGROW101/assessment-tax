@@ -38,9 +38,10 @@ func main() {
 
 	// Create service instances
 	taxCalculatorService := service.NewTaxCalculatorService(taxRepo, adminRepo)
+	taxCSVService := service.NewTaxCSVService(taxRepo, adminRepo)
 	// Create handler instances
 	calculatorHandler := handler.NewCalculatorHandler(taxCalculatorService)
-
+	csvHandler := handler.NewCSVHandler(taxCSVService)
 	adminHandler := handler.NewAdminHandler(adminRepo)
 
 	// Create a new Echo instance
@@ -68,6 +69,8 @@ func main() {
 	e.POST("/admin/deductions", adminHandler.UpdateConfig, middleware.BasicAuth(func(username, password string, c echo.Context) (bool, error) {
 		return username == cfg.AdminUsername && password == cfg.AdminPassword, nil
 	}))
+
+	e.POST("tax/calculations/upload-csv", csvHandler.UploadCSV)
 
 	// Start server with graceful shutdown
 	go func() {
