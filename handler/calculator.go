@@ -1,3 +1,4 @@
+// Calculator
 package handler
 
 import (
@@ -8,20 +9,48 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-type TaxHandler struct {
-	TaxCalculatorService *service.TaxCalculatorService
+type CalculatorHandler struct {
+	taxCalculatorService service.TaxCalculatorService
 }
 
-func (h *TaxHandler) CalculateTax(c echo.Context) error {
-	var req model.TaxCalculationRequest
+func NewCalculatorHandler(taxCalculatorService service.TaxCalculatorService) *CalculatorHandler {
+	return &CalculatorHandler{
+		taxCalculatorService: taxCalculatorService,
+	}
+}
+
+type CalculateTaxRequest struct {
+	TotalIncome float64           `json:"totalIncome"`
+	WHT         float64           `json:"wht"`
+	Allowances  []model.Allowance `json:"allowances"`
+}
+
+func (h *CalculatorHandler) CalculateTax(c echo.Context) error {
+	var req CalculateTaxRequest
 	if err := c.Bind(&req); err != nil {
-		return c.JSON(http.StatusBadRequest, err.Error())
+		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
 
-	resp, err := h.TaxCalculatorService.CalculateTax(&req)
+	// Check if the request body is valid
+	if req.TotalIncome < 0 || req.WHT < 0 || len(req.Allowances) == 0 {
+		return echo.NewHTTPError(http.StatusBadRequest, "Invalid request body")
+	}
+	taxCalculation, err := h.taxCalculatorService.CalculateTax(req.TotalIncome, req.WHT, req.Allowances)
 	if err != nil {
-		return c.JSON(http.StatusInternalServerError, err.Error())
+		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
+	}
+	response := map[string]interface{}{
+		"tax": taxCalculation.TaxPayable,
 	}
 
-	return c.JSON(http.StatusOK, resp)
+	return c.JSON(http.StatusOK, response)
+}
+
+func (h *CalculatorHandler) GetAllCalculations(c echo.Context) error {
+	taxCalculations, err := h.taxCalculatorService.GetAllCalculations()
+	if err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
+	}
+
+	return c.JSON(http.StatusOK, taxCalculations)
 }

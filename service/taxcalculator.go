@@ -2,44 +2,100 @@ package service
 
 import (
 	"github.com/LGROW101/assessment-tax/model"
+	"github.com/LGROW101/assessment-tax/repository"
 )
 
-type TaxCalculatorService struct{}
+type TaxCalculatorService interface {
+	GetAllCalculations() ([]*model.TaxCalculation, error)
+	CalculateTax(income, wht float64, allowances []model.Allowance) (*model.TaxCalculation, error)
+}
+type taxCalculatorService struct {
+	taxRepo  repository.TaxRepository
+	adminSvc AdminServiceInterface
+}
 
-func (s *TaxCalculatorService) CalculateTax(req *model.TaxCalculationRequest) (*model.TaxCalculationResponse, error) {
-	var personalAllowance float64 = 60000
-	var donationAllowance float64
+func NewTaxCalculatorService(taxRepo repository.TaxRepository, adminRepo repository.AdminRepository) TaxCalculatorService {
+	return &taxCalculatorService{
+		taxRepo:  taxRepo,
+		adminSvc: NewAdminService(adminRepo),
+	}
+}
 
-	for _, allowance := range req.Allowances {
-		if allowance.AllowanceType == "donation" {
-			donationAllowance = allowance.Amount
-			break
+func (s *taxCalculatorService) GetAllCalculations() ([]*model.TaxCalculation, error) {
+	return s.taxRepo.GetAllCalculations()
+}
+
+func (s *taxCalculatorService) CalculateTax(totalIncome, wht float64, allowances []model.Allowance) (*model.TaxCalculation, error) {
+
+	config, err := s.adminSvc.GetConfig() // Use the GetConfig method from the AdminServiceInterface
+	if err != nil {
+		return nil, err
+	}
+	// Set default values if not provided
+	personalAllowance := config.PersonalDeduction
+	donation := 0.0
+	kReceipt := 0.0
+
+	for _, allowance := range allowances {
+		switch allowance.AllowanceType {
+		case "donation":
+			donation = allowance.Amount
+			if donation > 100000 {
+				donation = 100000
+			}
+		case "k-receipt":
+			kReceipt = allowance.Amount
+			if kReceipt > config.KReceipt {
+				kReceipt = config.KReceipt
+			}
 		}
 	}
 
-	netIncome := req.TotalIncome - personalAllowance - donationAllowance
+	// Calculate taxable income
+	taxableIncome := totalIncome - personalAllowance - donation - kReceipt
+
+	// Calculate tax
 	var tax float64
 	switch {
-	case netIncome <= 150000:
+	case taxableIncome <= 0:
 		tax = 0
-	case netIncome <= 500000:
-		tax = (netIncome - 150000) * 0.1
-	case netIncome <= 1000000:
-		tax = 35000 + (netIncome-500000)*0.15
-	case netIncome <= 2000000:
-		tax = 110000 + (netIncome-1000000)*0.2
+	case taxableIncome <= 150000:
+		tax = taxableIncome * 0.05
+	case taxableIncome <= 300000:
+		tax = 7500 + (taxableIncome-150000)*0.05
+	case taxableIncome <= 500000:
+		tax = 15000 + (taxableIncome-300000)*0.10
+	case taxableIncome <= 750000:
+		tax = 35000 + (taxableIncome-500000)*0.15
+	case taxableIncome <= 1000000:
+		tax = 57500 + (taxableIncome-750000)*0.20
+	case taxableIncome <= 2000000:
+		tax = 107500 + (taxableIncome-1000000)*0.25
+	case taxableIncome <= 5000000:
+		tax = 357500 + (taxableIncome-2000000)*0.30
 	default:
-		tax = 310000 + (netIncome-2000000)*0.35
+		tax = 1257500 + (taxableIncome-5000000)*0.35
 	}
 
-	// ตรวจสอบว่าภาษีที่คำนวณได้มากกว่าภาษีที่หัก ณ ที่จ่ายหรือไม่
-	if tax > req.WHT {
-		// ถ้ามากกว่า ให้ลดภาษีที่ต้องจ่ายลงด้วยจำนวนภาษีที่หัก ณ ที่จ่าย
-		tax -= req.WHT
-	} else {
-		// ถ้าน้อยกว่าหรือเท่ากัน แสดงว่าได้หักภาษี ณ ที่จ่ายครบแล้ว ไม่ต้องจ่ายภาษีเพิ่ม
-		tax = 0
+	taxPayable := tax - wht
+	if taxPayable < 0 {
+		taxPayable = 0
 	}
 
-	return &model.TaxCalculationResponse{Tax: tax}, nil
+	taxCalculation := &model.TaxCalculation{
+		TotalIncome:       totalIncome,
+		WHT:               wht,
+		PersonalAllowance: personalAllowance,
+		Donation:          donation,
+		KReceipt:          kReceipt,
+		Tax:               taxPayable,
+		TaxPayable:        taxPayable,
+	}
+
+	err = s.taxRepo.Save(taxCalculation)
+	if err != nil {
+		return nil, err
+	}
+
+	return taxCalculation, nil
 }
