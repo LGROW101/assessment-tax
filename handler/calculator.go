@@ -32,7 +32,6 @@ func (h *CalculatorHandler) CalculateTax(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
 
-	// Check if the request body is valid
 	if req.TotalIncome < 0 || req.WHT < 0 || len(req.Allowances) == 0 {
 		return echo.NewHTTPError(http.StatusBadRequest, "Invalid request body")
 	}

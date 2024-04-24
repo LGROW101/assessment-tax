@@ -47,10 +47,8 @@ func (s *taxCalculatorService) CalculateTax(totalIncome, wht float64, allowances
 		}
 	}
 
-	// Calculate taxable income
 	taxableIncome := totalIncome - personalAllowance - donation - kReceipt
 
-	// Calculate tax
 	var tax float64
 	switch {
 	case taxableIncome <= 150000:
@@ -67,13 +65,11 @@ func (s *taxCalculatorService) CalculateTax(totalIncome, wht float64, allowances
 
 	taxPayable := math.Max(tax-wht, 0)
 
-	// Calculate tax refund
 	var taxRefund float64
 	if tax < wht {
 		taxRefund = wht - tax
 	}
 
-	// Calculate tax levels
 	taxLevel := []model.TaxRate{
 		{Level: "0-150,000", Tax: 0},
 		{Level: "150,001-500,000", Tax: 0},
