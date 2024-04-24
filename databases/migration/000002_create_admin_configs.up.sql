@@ -9,7 +9,7 @@ CREATE TABLE
         ),
         k_receipt DECIMAL(10, 2) NOT NULL DEFAULT 50000.00 CHECK (
             k_receipt >= 0
-            AND k_receipt <= 50000
+            AND k_receipt <= 100000
         ),
         created_at TIMESTAMP NOT NULL DEFAULT NOW (),
         updated_at TIMESTAMP NOT NULL DEFAULT NOW ()
