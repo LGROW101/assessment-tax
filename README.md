@@ -33,7 +33,7 @@
 ```
 ผมได้เพิ่มในส่วนของ Method GET เพิื่อดึงข้อมูลมาแสดงผล
 GET: /admin/deductions แสดงข้อมูล admin
-GET /tax/calculations เพื่อดึงข้อมูลการคำนวณภาษีทั้งหมด
+GET /tax/calculations แสดงข้อมูลคำนวณภาษีทั้งหมด
 ```
 ### Story: EXP01
 `POST:` tax/calculations
