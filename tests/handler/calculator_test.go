@@ -198,3 +198,62 @@ func TestGetAllCalculationsWithServiceError(t *testing.T) {
 	assert.Error(t, err)
 	assert.Equal(t, http.StatusInternalServerError, err.(*echo.HTTPError).Code)
 }
+
+func TestCalculateTaxWithInvalidRequestValues(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockService := mocks.NewMockTaxCalculatorService(ctrl)
+	calculatorHandler := handler.NewCalculatorHandler(mockService)
+
+	invalidReqBodies := []handler.CalculateTaxRequest{
+		{TotalIncome: -1000, WHT: 50000, Allowances: []model.Allowance{{AllowanceType: "allowance1", Amount: 10000}}},
+		{TotalIncome: 1000000, WHT: -50000, Allowances: []model.Allowance{{AllowanceType: "allowance1", Amount: 10000}}},
+		{TotalIncome: 1000000, WHT: 50000, Allowances: []model.Allowance{}},
+	}
+
+	for _, reqBody := range invalidReqBodies {
+		body, _ := json.Marshal(reqBody)
+		req := httptest.NewRequest(http.MethodPost, "/calculate-tax", bytes.NewBuffer(body))
+		req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+		rec := httptest.NewRecorder()
+		e := echo.New()
+		c := e.NewContext(req, rec)
+
+		err := calculatorHandler.CalculateTax(c)
+		assert.Error(t, err)
+		assert.Equal(t, http.StatusBadRequest, err.(*echo.HTTPError).Code)
+	}
+}
+
+func TestCalculateTaxWithServiceError(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockService := mocks.NewMockTaxCalculatorService(ctrl)
+	calculatorHandler := handler.NewCalculatorHandler(mockService)
+
+	totalIncome := 1000000.0
+	wht := 50000.0
+	allowances := []model.Allowance{
+		{AllowanceType: "allowance1", Amount: 10000.0},
+	}
+
+	mockService.EXPECT().CalculateTax(totalIncome, wht, allowances).Return(nil, errors.New("service error"))
+
+	reqBody, _ := json.Marshal(handler.CalculateTaxRequest{
+		TotalIncome: totalIncome,
+		WHT:         wht,
+		Allowances:  allowances,
+	})
+
+	req := httptest.NewRequest(http.MethodPost, "/calculate-tax", bytes.NewBuffer(reqBody))
+	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+	rec := httptest.NewRecorder()
+	e := echo.New()
+	c := e.NewContext(req, rec)
+
+	err := calculatorHandler.CalculateTax(c)
+	assert.Error(t, err)
+	assert.Equal(t, http.StatusInternalServerError, err.(*echo.HTTPError).Code)
+}

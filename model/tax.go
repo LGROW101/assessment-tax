@@ -36,7 +36,7 @@ type TaxCalculationResponse struct {
 }
 
 func (t *TaxCalculation) BeforeSave(tx *gorm.DB) (err error) {
-	// Validate fields before saving
+
 	if t.TotalIncome < 0 {
 		return errors.New("income must be positive")
 	}

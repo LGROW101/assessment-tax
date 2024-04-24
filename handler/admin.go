@@ -1,3 +1,4 @@
+// admin
 package handler
 
 import (
@@ -8,24 +9,17 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-// AdminHandler is an interface for admin handler
-type AdminHandler interface {
-	GetConfig(c echo.Context) error
-	UpdateConfig(c echo.Context) error
-}
-
-type adminHandler struct {
+type AdminHandler struct {
 	adminRepo repository.AdminRepository
 }
 
-// NewAdminHandler creates a new instance of AdminHandler
-func NewAdminHandler(adminRepo repository.AdminRepository) AdminHandler {
-	return &adminHandler{
+func NewAdminHandler(adminRepo repository.AdminRepository) *AdminHandler {
+	return &AdminHandler{
 		adminRepo: adminRepo,
 	}
 }
 
-func (h *adminHandler) GetConfig(c echo.Context) error {
+func (h *AdminHandler) GetConfig(c echo.Context) error {
 	config, err := h.adminRepo.GetConfig()
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
@@ -42,7 +36,7 @@ func (h *adminHandler) GetConfig(c echo.Context) error {
 	return c.JSON(http.StatusOK, resp)
 }
 
-func (h *adminHandler) UpdateConfig(c echo.Context) error {
+func (h *AdminHandler) UpdateConfig(c echo.Context) error {
 	var req model.AdminRequest
 	if err := c.Bind(&req); err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
@@ -61,18 +55,11 @@ func (h *adminHandler) UpdateConfig(c echo.Context) error {
 		}
 	}
 
-	resp := &model.AdminResponse{
-		PersonalDeduction: config.PersonalDeduction,
-		KReceipt:          config.KReceipt,
-	}
-
 	if req.PersonalDeduction != nil {
 		config.PersonalDeduction = *req.PersonalDeduction
-		resp.PersonalDeduction = *req.PersonalDeduction
 	}
 	if req.KReceipt != nil {
 		config.KReceipt = *req.KReceipt
-		resp.KReceipt = *req.KReceipt
 	}
 
 	if err := config.Validate(); err != nil {
@@ -82,6 +69,14 @@ func (h *adminHandler) UpdateConfig(c echo.Context) error {
 	err = h.adminRepo.UpdateConfig(config)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
+	}
+
+	resp := &model.AdminResponse{}
+	if req.PersonalDeduction != nil {
+		resp.PersonalDeduction = *req.PersonalDeduction
+	}
+	if req.KReceipt != nil {
+		resp.KReceipt = *req.KReceipt
 	}
 
 	return c.JSON(http.StatusOK, resp)

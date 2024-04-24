@@ -62,7 +62,6 @@ func TestTaxCalculatorService_CalculateTax(t *testing.T) {
 		{AllowanceType: "k-receipt", Amount: 20000.0},
 	}
 
-	// Calculate the expected tax calculation result
 	taxableIncome := iotalIncome - config.PersonalDeduction - allowances[0].Amount - allowances[1].Amount
 	var tax float64
 	switch {
@@ -87,7 +86,6 @@ func TestTaxCalculatorService_CalculateTax(t *testing.T) {
 		taxRefund = 0
 	}
 
-	// Calculate the expected TaxLevel based on taxableIncome
 	expectedTaxLevel := []model.TaxRate{
 		{Level: "0-150,000", Tax: 0},
 		{Level: "150,001-500,000", Tax: 0},

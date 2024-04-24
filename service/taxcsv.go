@@ -31,7 +31,7 @@ func (s *taxCSVService) ImportCSV(reader io.Reader) ([]map[string]float64, error
 	csvReader := csv.NewReader(reader)
 	csvReader.FieldsPerRecord = -1 // Allow variable number of fields per record
 
-	csvReader.Read() // Skip header
+	csvReader.Read()
 
 	var taxes []map[string]float64
 	for {
@@ -63,22 +63,19 @@ func (s *taxCSVService) ImportCSV(reader io.Reader) ([]map[string]float64, error
 }
 
 func (s *taxCSVService) CalculateTax(totalIncome, wht, donation, kReceipt float64) (float64, error) {
-	// Get admin config
+
 	config, err := s.adminSvc.GetConfig()
 	if err != nil {
 		return 0, err
 	}
 
-	// Set default values if not provided
 	personalAllowance := config.PersonalDeduction
 
-	// Calculate taxable totalIncome
 	taxableIncome := totalIncome - personalAllowance - donation - kReceipt
 	if kReceipt > config.KReceipt {
 		taxableIncome += kReceipt - config.KReceipt
 	}
 
-	// Calculate tax
 	var tax float64
 	switch {
 	case taxableIncome <= 0:

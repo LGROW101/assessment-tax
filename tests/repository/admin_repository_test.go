@@ -19,7 +19,6 @@ func TestAdminRepository_GetConfig(t *testing.T) {
 
 	repo := repository.NewAdminRepository(db)
 
-	// Test case: No configuration found
 	rows := sqlmock.NewRows([]string{"id", "personal_deduction", "k_receipt", "created_at", "updated_at"})
 	mock.ExpectQuery("^SELECT id, personal_deduction, k_receipt, created_at, updated_at FROM admin_configs ORDER BY id DESC LIMIT 1$").WillReturnRows(rows)
 
@@ -27,7 +26,6 @@ func TestAdminRepository_GetConfig(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Nil(t, config)
 
-	// Test case: Configuration found
 	createdAt := time.Now().Add(-24 * time.Hour)
 	updatedAt := time.Now()
 	rows = sqlmock.NewRows([]string{"id", "personal_deduction", "k_receipt", "created_at", "updated_at"}).

@@ -36,7 +36,6 @@ func TestTaxRepository_Save(t *testing.T) {
 	err = repo.Save(taxCalculation)
 	assert.NoError(t, err)
 
-	// Test case: Error while saving tax calculation
 	mock.ExpectExec("^INSERT INTO tax_calculations").
 		WithArgs(taxCalculation.TotalIncome, taxCalculation.WHT, taxCalculation.PersonalAllowance, taxCalculation.Donation, taxCalculation.KReceipt, taxCalculation.Tax).
 		WillReturnError(errors.New("database error"))
@@ -54,7 +53,6 @@ func TestTaxRepository_GetAllCalculations(t *testing.T) {
 
 	repo := repository.NewTaxRepository(db)
 
-	// Test case: Successful retrieval of tax calculations
 	createdAt := time.Now()
 	rows := sqlmock.NewRows([]string{"id", "totalIncome", "wht", "personal_allowance", "donation", "k_receipt", "tax", "created_at"}).
 		AddRow(1, 1000000, 100000, 60000, 10000, 30000, 200000, createdAt).
@@ -90,7 +88,6 @@ func TestTaxRepository_GetAllCalculations(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, expectedCalculations, calculations)
 
-	// Test case: Error while querying tax calculations
 	mock.ExpectQuery("^SELECT id, totalIncome, wht, personal_allowance, donation, k_receipt, tax, created_at FROM tax_calculations$").
 		WillReturnError(errors.New("database error"))
 
@@ -98,7 +95,6 @@ func TestTaxRepository_GetAllCalculations(t *testing.T) {
 	assert.Error(t, err)
 	assert.Nil(t, calculations)
 
-	// Test case: Error while scanning tax calculations
 	rows = sqlmock.NewRows([]string{"id", "totalIncome", "wht", "personal_allowance", "donation", "k_receipt", "tax", "created_at"}).
 		AddRow(1, "invalid", 100000, 60000, 10000, 30000, 200000, createdAt)
 
