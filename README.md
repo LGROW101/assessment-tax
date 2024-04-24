@@ -12,7 +12,17 @@
 ```
 
 ## User stories
+```
+ผมได้เพิ่มในส่วนของ IncludeTaxLevel เพื่อดู รายละเอียดของขั้นบันใดภาษี
+เช่น  "IncludeTaxLevel": true ก็จะแสดง รายละเอียดของขั้นบันใดภาษี
+ถ้า "IncludeTaxLevel": false ก็จะแสดง  tax อย่างเดียว หรือไม่ต้องไส่ "IncludeTaxLevel": false ก็ได้สามารถแสดง tax
 
+```
+```
+ผมได้เพิ่มในส่วนของ Method GET เพิื่อดึงข้อมูลมาแสดงผล
+GET: /admin/deductions แสดงข้อมูล admin
+GET /tax/calculations เพื่อดึงข้อมูลการคำนวณภาษีทั้งหมด
+```
 ### Story: EXP01
 `POST:` tax/calculations
 
