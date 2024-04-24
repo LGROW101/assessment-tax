@@ -16,6 +16,18 @@
 ผมได้เพิ่มในส่วนของ IncludeTaxLevel เพื่อดู รายละเอียดของขั้นบันใดภาษี
 เช่น  "IncludeTaxLevel": true ก็จะแสดง รายละเอียดของขั้นบันใดภาษี
 ถ้า "IncludeTaxLevel": false ก็จะแสดง  tax อย่างเดียว หรือไม่ต้องไส่ "IncludeTaxLevel": false ก็ได้สามารถแสดง tax
+ตัวอย่าง
+{
+  "totalIncome": 500000.0,
+  "wht": 0.0,
+  "allowances": [
+    {
+      "allowanceType": "donation",
+      "amount": 200000.0
+    }
+  ],
+  "IncludeTaxLevel": true
+}
 
 ```
 ```
