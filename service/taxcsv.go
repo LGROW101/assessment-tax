@@ -11,7 +11,7 @@ import (
 
 type TaxCSVService interface {
 	ImportCSV(reader io.Reader) ([]map[string]float64, error)
-	CalculateTax(totalIncome, wht, donation, kReceipt float64) (float64, error)
+	CalculateTax(totalIncome, wht, donation, kReceipt float64) (float64, float64, error)
 }
 
 type taxCSVService struct {
@@ -48,25 +48,32 @@ func (s *taxCSVService) ImportCSV(reader io.Reader) ([]map[string]float64, error
 			return nil, err
 		}
 
-		tax, err := s.CalculateTax(totalIncome, wht, donation, kReceipt) // Pass kReceipt as the fourth argument
+		taxPayable, taxRefund, err := s.CalculateTax(totalIncome, wht, donation, kReceipt) // Pass kReceipt as the fourth argument
 		if err != nil {
 			return nil, err
 		}
 
-		taxes = append(taxes, map[string]float64{
+		taxResult := map[string]float64{
 			"totalIncome": totalIncome,
-			"tax":         tax,
-		})
+		}
+
+		if taxRefund > 0 {
+			taxResult["taxRefund"] = taxRefund
+		} else {
+			taxResult["tax"] = taxPayable
+		}
+
+		taxes = append(taxes, taxResult)
 	}
 
 	return taxes, nil
 }
 
-func (s *taxCSVService) CalculateTax(totalIncome, wht, donation, kReceipt float64) (float64, error) {
+func (s *taxCSVService) CalculateTax(totalIncome, wht, donation, kReceipt float64) (float64, float64, error) {
 
 	config, err := s.adminSvc.GetConfig()
 	if err != nil {
-		return 0, err
+		return 0, 0, err
 	}
 
 	personalAllowance := config.PersonalDeduction
@@ -100,11 +107,13 @@ func (s *taxCSVService) CalculateTax(totalIncome, wht, donation, kReceipt float6
 
 	// Calculate tax payable
 	taxPayable := tax - wht
+	var taxRefund float64
 	if taxPayable < 0 {
+		taxRefund = -taxPayable
 		taxPayable = 0
 	}
 
-	return taxPayable, nil
+	return taxPayable, taxRefund, nil
 }
 
 func ParseFields(fields []string) (float64, float64, float64, float64, error) {

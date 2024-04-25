@@ -25,13 +25,13 @@ func TestTaxCSVService_ImportCSV(t *testing.T) {
 	adminRepo.EXPECT().GetConfig().Return(adminConfig, nil).Times(3)
 
 	csvData := `income,wht,donation,kReceipt
-		500000,0,0,0
-		600000,40000,20000,0
-		750000,50000,15000,0`
+ 		500000,0,0,0
+ 		600000,40000,20000,0
+ 		750000,50000,15000,0`
 
 	expectedResult := []map[string]float64{
 		{"totalIncome": 500000, "tax": 29000},
-		{"totalIncome": 600000, "tax": 0},
+		{"totalIncome": 600000, "taxRefund": 2000},
 		{"totalIncome": 750000, "tax": 11250},
 	}
 
@@ -45,16 +45,13 @@ func TestTaxCSVService_ImportCSV(t *testing.T) {
 func TestTaxCSVService_CalculateTax(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
-
 	taxRepo := mocks.NewMockTaxRepository(ctrl)
 	adminRepo := mocks.NewMockAdminRepository(ctrl)
-
 	adminConfig := &model.AdminConfig{
 		PersonalDeduction: 60000,
 		KReceipt:          0,
 	}
 	adminRepo.EXPECT().GetConfig().Return(adminConfig, nil).Times(3)
-
 	taxCSVService := service.NewTaxCSVService(taxRepo, adminRepo)
 
 	testCases := []struct {
@@ -72,7 +69,7 @@ func TestTaxCSVService_CalculateTax(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			result, err := taxCSVService.CalculateTax(tc.income, tc.wht, tc.donation, tc.kReceipt)
+			result, _, err := taxCSVService.CalculateTax(tc.income, tc.wht, tc.donation, tc.kReceipt)
 			assert.NoError(t, err)
 			assert.Equal(t, tc.expected, result)
 		})

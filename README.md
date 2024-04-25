@@ -1,17 +1,19 @@
-# assessment-tax  โปรแกรมคำนวนภาษี
+# assessment-tax โปรแกรมคำนวนภาษี
 
- assessment-tax เป็น Application คำนวนภาษี ที่ให้ผู้ใช้งานสามารถคำนวนภาษีบุคคลธรรมดา ตามขั้นบันใดภาษี พร้อมกับคำนวนค่าลดหย่อน และภาษีที่ต้องได้รับคืน
+assessment-tax เป็น Application คำนวนภาษี ที่ให้ผู้ใช้งานสามารถคำนวนภาษีบุคคลธรรมดา ตามขั้นบันใดภาษี พร้อมกับคำนวนค่าลดหย่อน และภาษีที่ต้องได้รับคืน
 
 ## Getting Started
- ```
- git clone https://github.com/LGROW101/assessment-tax.git
- 
- cd assessment-tax
- 
- docker compose up
+
+```
+git clone https://github.com/LGROW101/assessment-tax.git
+
+cd assessment-tax
+
+docker compose up
 ```
 
 ## User stories
+
 ```
 ผมได้เพิ่มในส่วนของ IncludeTaxLevel เพื่อดู รายละเอียดของขั้นบันใดภาษี
 เช่น  "IncludeTaxLevel": true ก็จะแสดง รายละเอียดของขั้นบันใดภาษี
@@ -30,12 +32,15 @@
 }
 
 ```
+
 ```
 ผมได้เพิ่มในส่วนของ Method GET เพิื่อดึงข้อมูลมาแสดงผล
 GET: /admin/deductions แสดงข้อมูล admin
 GET /tax/calculations แสดงข้อมูลคำนวณภาษีทั้งหมด
 ```
+
 ### Story: EXP01
+
 `POST:` tax/calculations
 
 ```json
@@ -58,7 +63,9 @@ Response body
   "tax": 29000
 }
 ```
-----
+
+---
+
 ### Story: EXP02
 
 `POST:` tax/calculations
@@ -83,7 +90,9 @@ Response body
   "tax": 4000
 }
 ```
-----
+
+---
+
 ### Story: EXP03
 
 `POST:` tax/calculations
@@ -108,7 +117,9 @@ Response body
   "tax": 19000
 }
 ```
-----
+
+---
+
 ### Story: EXP04
 
 `POST:` tax/calculations
@@ -156,7 +167,8 @@ Response body
   ]
 }
 ```
-----
+
+---
 
 ### Story: EXP05
 
@@ -164,23 +176,24 @@ Response body
 
 ```json
 {
-    "personalDeduction": 70000
-} 
+  "personalDeduction": 70000
+}
 ```
 
 Response body
 
 ```json
 {
-    "personalDeduction": 70000
-} 
+  "personalDeduction": 70000
+}
 ```
-----
 
+---
 
 ### Story: EXP06
 
 `POST:` tax/calculations/upload-csv
+
 ```
 totalIncome,wht,donation
 500000,0,0
@@ -192,23 +205,25 @@ Response body
 
 ```json
 {
-    "taxes": [
-        {
-            "tax": 29000,
-            "totalIncome": 500000
-        },
-        {
-            "tax": 0,
-            "totalIncome": 600000
-        },
-        {
-            "tax": 11250,
-            "totalIncome": 750000
-        }
-    ]
+  "taxes": [
+    {
+      "tax": 29000,
+      "totalIncome": 500000
+    },
+    {
+      "taxRefund": 2000,
+      "totalIncome": 600000
+    },
+    {
+      "tax": 11250,
+      "totalIncome": 750000
+    }
+  ]
 }
 ```
--------
+
+---
+
 ### Story: EXP07
 
 `POST:` tax/calculations
@@ -235,32 +250,33 @@ Response body
 
 ```json
 {
-    "tax": 14000,
-    "taxLevel": [
-        {
-            "level": "0-150,000",
-            "tax": 0
-        },
-        {
-            "level": "150,001-500,000",
-            "tax": 14000
-        },
-        {
-            "level": "500,001-1,000,000",
-            "tax": 0
-        },
-        {
-            "level": "1,000,001-2,000,000",
-            "tax": 0
-        },
-        {
-            "level": "2,000,001 ขึ้นไป",
-            "tax": 0
-        }
-    ]
+  "tax": 14000,
+  "taxLevel": [
+    {
+      "level": "0-150,000",
+      "tax": 0
+    },
+    {
+      "level": "150,001-500,000",
+      "tax": 14000
+    },
+    {
+      "level": "500,001-1,000,000",
+      "tax": 0
+    },
+    {
+      "level": "1,000,001-2,000,000",
+      "tax": 0
+    },
+    {
+      "level": "2,000,001 ขึ้นไป",
+      "tax": 0
+    }
+  ]
 }
 ```
-----
+
+---
 
 ### Story: EXP08
 
@@ -268,8 +284,8 @@ Response body
 
 ```json
 {
-    "k_receipt": 70000
-} 
+  "k_receipt": 70000
+}
 ```
 
 Response body
@@ -279,4 +295,5 @@ Response body
   "KReceipt": 70000
 }
 ```
-----
+
+---
