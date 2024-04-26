@@ -1,6 +1,6 @@
-# assessment-tax โปรแกรมคำนวนภาษี
+# K-Tax โปรแกรมคำนวนภาษี
 
-assessment-tax เป็น Application คำนวนภาษี ที่ให้ผู้ใช้งานสามารถคำนวนภาษีบุคคลธรรมดา ตามขั้นบันใดภาษี พร้อมกับคำนวนค่าลดหย่อน และภาษีที่ต้องได้รับคืน
+K-Tax เป็น Application คำนวนภาษี ที่ให้ผู้ใช้งานสามารถคำนวนภาษีบุคคลธรรมดา ตามขั้นบันใดภาษี พร้อมกับคำนวนค่าลดหย่อน และภาษีที่ต้องได้รับคืน
 
 ## Getting Started
 
@@ -10,6 +10,14 @@ git clone https://github.com/LGROW101/assessment-tax.git
 cd assessment-tax
 
 docker compose up
+```
+## admin update PersonalDeduction and k-receip
+```
+http://localhost:3000/admin/login
+
+ADMIN_USERNAME=adminTax
+
+ADMIN_PASSWORD=admin!
 ```
 
 ## User stories
