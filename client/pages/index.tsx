@@ -117,7 +117,7 @@ export default function TaxCalculator() {
             htmlFor="kReceiptAmount"
             className="block text-gray-700 font-semibold mb-2"
           >
-            เบี้ยเลี้ยง
+            โครงการช้อปลดภาษี(k-Receipt)
           </label>
           <input
             type="text"
