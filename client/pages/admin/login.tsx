@@ -50,7 +50,7 @@ export default function AdminLogin() {
   };
   return (
     <div className="max-w-sm mx-auto mt-8">
-      {message && <p className="mb-4 text-green-500">{message}</p>}
+      {message && <p className=" text-center text-red-500 mb-4 text-2xl">{message}</p>}
       <form onSubmit={handleSubmit}>
         <div className="mb-4">
           <label htmlFor="username" className="block mb-2 font-bold">
