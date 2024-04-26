@@ -9,7 +9,7 @@ import (
 
 type TaxCalculatorService interface {
 	GetAllCalculations() ([]*model.TaxCalculation, error)
-	CalculateTax(income, wht float64, allowances []model.Allowance) (*model.TaxCalculation, error)
+	CalculateTax(totalIncome, wht float64, allowances []model.Allowance) (*model.TaxCalculationResponse, error)
 }
 type taxCalculatorService struct {
 	taxRepo  repository.TaxRepository
@@ -27,7 +27,7 @@ func (s *taxCalculatorService) GetAllCalculations() ([]*model.TaxCalculation, er
 	return s.taxRepo.GetAllCalculations()
 }
 
-func (s *taxCalculatorService) CalculateTax(totalIncome, wht float64, allowances []model.Allowance) (*model.TaxCalculation, error) {
+func (s *taxCalculatorService) CalculateTax(totalIncome, wht float64, allowances []model.Allowance) (*model.TaxCalculationResponse, error) {
 	config, err := s.adminSvc.GetConfig()
 	if err != nil {
 		return nil, err
@@ -108,5 +108,15 @@ func (s *taxCalculatorService) CalculateTax(totalIncome, wht float64, allowances
 		return nil, err
 	}
 
-	return taxCalculation, nil
+	taxResponse := &model.TaxCalculationResponse{
+		TaxLevel: taxLevel,
+	}
+
+	if taxPayable > 0 {
+		taxResponse.Tax = &taxPayable
+	} else if taxRefund > 0 {
+		taxResponse.TaxRefund = &taxRefund
+	}
+
+	return taxResponse, nil
 }

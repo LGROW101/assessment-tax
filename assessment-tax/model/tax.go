@@ -32,7 +32,9 @@ type Allowance struct {
 }
 
 type TaxCalculationResponse struct {
-	Tax float64 `json:"tax"`
+	Tax       *float64  `json:"tax,omitempty"`
+	TaxRefund *float64  `json:"taxRefund,omitempty"`
+	TaxLevel  []TaxRate `json:"taxLevel,omitempty"`
 }
 
 func (t *TaxCalculation) BeforeSave(tx *gorm.DB) (err error) {

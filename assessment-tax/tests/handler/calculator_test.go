@@ -31,14 +31,15 @@ func TestCalculateTax(t *testing.T) {
 	}
 	includeTaxLevel := true
 
-	expectedTaxCalc := &model.TaxCalculation{
-		TaxPayable: 100000.0,
+	expectedTax := 100000.0
+	expectedTaxResponse := &model.TaxCalculationResponse{
+		Tax: &expectedTax,
 		TaxLevel: []model.TaxRate{
 			{Level: "Level 2", Tax: 10000.0},
 		},
 	}
 
-	mockService.EXPECT().CalculateTax(totalIncome, wht, allowances).Return(expectedTaxCalc, nil)
+	mockService.EXPECT().CalculateTax(totalIncome, wht, allowances).Return(expectedTaxResponse, nil)
 
 	reqBody, _ := json.Marshal(handler.CalculateTaxRequest{
 		TotalIncome:     totalIncome,
@@ -60,15 +61,15 @@ func TestCalculateTax(t *testing.T) {
 	var response map[string]interface{}
 	err = json.Unmarshal(rec.Body.Bytes(), &response)
 	assert.NoError(t, err)
-	assert.Equal(t, expectedTaxCalc.TaxPayable, response["tax"])
+	assert.Equal(t, expectedTax, response["tax"].(float64))
 
 	taxLevelResponse, ok := response["taxLevel"].([]interface{})
 	assert.True(t, ok)
 	assert.Len(t, taxLevelResponse, 1)
 
 	taxRate := taxLevelResponse[0].(map[string]interface{})
-	assert.Equal(t, expectedTaxCalc.TaxLevel[0].Level, taxRate["level"])
-	assert.Equal(t, expectedTaxCalc.TaxLevel[0].Tax, taxRate["tax"])
+	assert.Equal(t, expectedTaxResponse.TaxLevel[0].Level, taxRate["level"])
+	assert.Equal(t, expectedTaxResponse.TaxLevel[0].Tax, taxRate["tax"])
 }
 
 func TestCalculateTaxWithInvalidRequestBody(t *testing.T) {
@@ -147,14 +148,12 @@ func TestCalculateTaxWithoutTaxLevel(t *testing.T) {
 	}
 	includeTaxLevel := false
 
-	expectedTaxCalc := &model.TaxCalculation{
-		TaxPayable: 100000.0,
-		TaxLevel: []model.TaxRate{
-			{Level: "Level 2", Tax: 10000.0},
-		},
+	expectedTax := 100000.0
+	expectedTaxResponse := &model.TaxCalculationResponse{
+		Tax: &expectedTax,
 	}
 
-	mockService.EXPECT().CalculateTax(totalIncome, wht, allowances).Return(expectedTaxCalc, nil)
+	mockService.EXPECT().CalculateTax(totalIncome, wht, allowances).Return(expectedTaxResponse, nil)
 
 	reqBody, _ := json.Marshal(handler.CalculateTaxRequest{
 		TotalIncome:     totalIncome,
@@ -176,10 +175,9 @@ func TestCalculateTaxWithoutTaxLevel(t *testing.T) {
 	var response map[string]interface{}
 	err = json.Unmarshal(rec.Body.Bytes(), &response)
 	assert.NoError(t, err)
-	assert.Equal(t, expectedTaxCalc.TaxPayable, response["tax"])
+	assert.Equal(t, expectedTax, response["tax"].(float64))
 	assert.Nil(t, response["taxLevel"])
 }
-
 func TestGetAllCalculationsWithServiceError(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()

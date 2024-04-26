@@ -19,6 +19,12 @@ func NewCalculatorHandler(taxCalculatorService service.TaxCalculatorService) *Ca
 	}
 }
 
+type TaxResponse struct {
+	TaxRefund *float64        `json:"taxRefund,omitempty"`
+	Tax       *float64        `json:"tax,omitempty"`
+	TaxLevel  []model.TaxRate `json:"taxLevel,omitempty"`
+}
+
 type CalculateTaxRequest struct {
 	TotalIncome     float64           `json:"totalIncome"`
 	WHT             float64           `json:"wht"`
@@ -35,21 +41,26 @@ func (h *CalculatorHandler) CalculateTax(c echo.Context) error {
 	if req.TotalIncome < 0 || req.WHT < 0 || len(req.Allowances) == 0 {
 		return echo.NewHTTPError(http.StatusBadRequest, "Invalid request body")
 	}
-	taxCalculation, err := h.taxCalculatorService.CalculateTax(req.TotalIncome, req.WHT, req.Allowances)
+
+	taxCalculationResponse, err := h.taxCalculatorService.CalculateTax(req.TotalIncome, req.WHT, req.Allowances)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 	}
-	response := map[string]interface{}{
-		"tax": taxCalculation.TaxPayable,
+
+	response := TaxResponse{}
+
+	if taxCalculationResponse.TaxRefund != nil && *taxCalculationResponse.TaxRefund > 0 {
+		response.TaxRefund = taxCalculationResponse.TaxRefund
+	} else if taxCalculationResponse.Tax != nil && *taxCalculationResponse.Tax > 0 {
+		response.Tax = taxCalculationResponse.Tax
 	}
 
 	if req.IncludeTaxLevel {
-		response["taxLevel"] = taxCalculation.TaxLevel
+		response.TaxLevel = taxCalculationResponse.TaxLevel
 	}
 
 	return c.JSON(http.StatusOK, response)
 }
-
 func (h *CalculatorHandler) GetAllCalculations(c echo.Context) error {
 	taxCalculations, err := h.taxCalculatorService.GetAllCalculations()
 	if err != nil {

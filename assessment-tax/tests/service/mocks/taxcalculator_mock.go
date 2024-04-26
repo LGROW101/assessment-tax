@@ -35,18 +35,18 @@ func (m *MockTaxCalculatorService) EXPECT() *MockTaxCalculatorServiceMockRecorde
 }
 
 // CalculateTax mocks base method.
-func (m *MockTaxCalculatorService) CalculateTax(income, wht float64, allowances []model.Allowance) (*model.TaxCalculation, error) {
+func (m *MockTaxCalculatorService) CalculateTax(totalIncome, wht float64, allowances []model.Allowance) (*model.TaxCalculationResponse, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CalculateTax", income, wht, allowances)
-	ret0, _ := ret[0].(*model.TaxCalculation)
+	ret := m.ctrl.Call(m, "CalculateTax", totalIncome, wht, allowances)
+	ret0, _ := ret[0].(*model.TaxCalculationResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // CalculateTax indicates an expected call of CalculateTax.
-func (mr *MockTaxCalculatorServiceMockRecorder) CalculateTax(income, wht, allowances interface{}) *gomock.Call {
+func (mr *MockTaxCalculatorServiceMockRecorder) CalculateTax(totalIncome, wht, allowances interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CalculateTax", reflect.TypeOf((*MockTaxCalculatorService)(nil).CalculateTax), income, wht, allowances)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CalculateTax", reflect.TypeOf((*MockTaxCalculatorService)(nil).CalculateTax), totalIncome, wht, allowances)
 }
 
 // GetAllCalculations mocks base method.

@@ -46,6 +46,8 @@ func TestTaxCalculatorService_CalculateTax(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
+	var expectedTaxCalculation *model.TaxCalculation
+
 	mockRepo := mocks.NewMockTaxRepository(ctrl)
 	mockAdminRepo := mocks.NewMockAdminRepository(ctrl)
 
@@ -106,7 +108,8 @@ func TestTaxCalculatorService_CalculateTax(t *testing.T) {
 		expectedTaxLevel[4].Tax = taxPayable
 	}
 
-	expectedTaxCalculation := &model.TaxCalculation{
+	// Initialize expectedTaxCalculation with the expected values
+	expectedTaxCalculation = &model.TaxCalculation{
 		TotalIncome:       iotalIncome,
 		WHT:               wht,
 		PersonalAllowance: config.PersonalDeduction,
@@ -119,10 +122,15 @@ func TestTaxCalculatorService_CalculateTax(t *testing.T) {
 	}
 
 	mockRepo.EXPECT().Save(expectedTaxCalculation).Return(nil)
+	expectedTaxCalculationResponse := &model.TaxCalculationResponse{
+		Tax:       nil,
+		TaxRefund: &taxRefund,
+		TaxLevel:  expectedTaxLevel,
+	}
 
 	taxSvc := service.NewTaxCalculatorService(mockRepo, mockAdminRepo)
 	taxCalculation, err := taxSvc.CalculateTax(iotalIncome, wht, allowances)
 
 	assert.NoError(t, err)
-	assert.Equal(t, expectedTaxCalculation, taxCalculation)
+	assert.Equal(t, expectedTaxCalculationResponse, taxCalculation)
 }
