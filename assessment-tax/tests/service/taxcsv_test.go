@@ -20,14 +20,13 @@ func TestTaxCSVService_ImportCSV(t *testing.T) {
 
 	adminConfig := &model.AdminConfig{
 		PersonalDeduction: 60000,
-		KReceipt:          0,
 	}
 	adminRepo.EXPECT().GetConfig().Return(adminConfig, nil).Times(3)
 
-	csvData := `income,wht,donation,kReceipt
- 		500000,0,0,0
- 		600000,40000,20000,0
- 		750000,50000,15000,0`
+	csvData := `income,wht,donation
+   500000,0,0
+   600000,40000,20000
+   750000,50000,15000`
 
 	expectedResult := []map[string]float64{
 		{"totalIncome": 500000, "tax": 29000},
@@ -49,7 +48,6 @@ func TestTaxCSVService_CalculateTax(t *testing.T) {
 	adminRepo := mocks.NewMockAdminRepository(ctrl)
 	adminConfig := &model.AdminConfig{
 		PersonalDeduction: 60000,
-		KReceipt:          0,
 	}
 	adminRepo.EXPECT().GetConfig().Return(adminConfig, nil).Times(3)
 	taxCSVService := service.NewTaxCSVService(taxRepo, adminRepo)
@@ -59,17 +57,16 @@ func TestTaxCSVService_CalculateTax(t *testing.T) {
 		income   float64
 		wht      float64
 		donation float64
-		kReceipt float64
 		expected float64
 	}{
-		{"Case 1", 500000, 0, 0, 0, 29000},
-		{"Case 2", 600000, 40000, 20000, 0, 0},
-		{"Case 3", 750000, 50000, 15000, 0, 11250},
+		{"Case 1", 500000, 0, 0, 29000},
+		{"Case 2", 600000, 40000, 20000, 0},
+		{"Case 3", 750000, 50000, 15000, 11250},
 	}
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			result, _, err := taxCSVService.CalculateTax(tc.income, tc.wht, tc.donation, tc.kReceipt)
+			result, _, err := taxCSVService.CalculateTax(tc.income, tc.wht, tc.donation)
 			assert.NoError(t, err)
 			assert.Equal(t, tc.expected, result)
 		})
@@ -83,17 +80,16 @@ func TestParseFields(t *testing.T) {
 		expected []float64
 		hasError bool
 	}{
-		{"Valid input", []string{"500000", "50000", "0", "0"}, []float64{500000, 50000, 0, 0}, false},
-		{"Missing fields", []string{"600000", "40000", "20000"}, []float64{600000, 40000, 20000, 0}, false},
-		{"Invalid income", []string{"invalid", "50000", "0", "0"}, nil, true},
-		{"Invalid wht", []string{"500000", "invalid", "0", "0"}, nil, true},
-		{"Invalid donation", []string{"500000", "50000", "invalid", "0"}, nil, true},
-		{"Invalid kReceipt", []string{"500000", "50000", "0", "invalid"}, nil, true},
+		{"Valid input", []string{"500000", "50000", "0"}, []float64{500000, 50000, 0}, false},
+		{"Missing fields", []string{"600000", "40000", "20000"}, []float64{600000, 40000, 20000}, false},
+		{"Invalid income", []string{"invalid", "50000", "0"}, nil, true},
+		{"Invalid wht", []string{"500000", "invalid", "0"}, nil, true},
+		{"Invalid donation", []string{"500000", "50000", "invalid"}, nil, true},
 	}
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			income, wht, donation, kReceipt, err := service.ParseFields(tc.input)
+			income, wht, donation, err := service.ParseFields(tc.input)
 			if tc.hasError {
 				assert.Error(t, err)
 			} else {
@@ -101,7 +97,6 @@ func TestParseFields(t *testing.T) {
 				assert.Equal(t, tc.expected[0], income)
 				assert.Equal(t, tc.expected[1], wht)
 				assert.Equal(t, tc.expected[2], donation)
-				assert.Equal(t, tc.expected[3], kReceipt)
 			}
 		})
 	}

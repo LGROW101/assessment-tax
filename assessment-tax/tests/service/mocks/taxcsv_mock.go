@@ -35,9 +35,9 @@ func (m *MockTaxCSVService) EXPECT() *MockTaxCSVServiceMockRecorder {
 }
 
 // CalculateTax mocks base method.
-func (m *MockTaxCSVService) CalculateTax(totalIncome, wht, donation, kReceipt float64) (float64, float64, error) {
+func (m *MockTaxCSVService) CalculateTax(totalIncome, wht, donation float64) (float64, float64, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CalculateTax", totalIncome, wht, donation, kReceipt)
+	ret := m.ctrl.Call(m, "CalculateTax", totalIncome, wht, donation)
 	ret0, _ := ret[0].(float64)
 	ret1, _ := ret[1].(float64)
 	ret2, _ := ret[2].(error)
@@ -45,9 +45,9 @@ func (m *MockTaxCSVService) CalculateTax(totalIncome, wht, donation, kReceipt fl
 }
 
 // CalculateTax indicates an expected call of CalculateTax.
-func (mr *MockTaxCSVServiceMockRecorder) CalculateTax(totalIncome, wht, donation, kReceipt interface{}) *gomock.Call {
+func (mr *MockTaxCSVServiceMockRecorder) CalculateTax(totalIncome, wht, donation interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CalculateTax", reflect.TypeOf((*MockTaxCSVService)(nil).CalculateTax), totalIncome, wht, donation, kReceipt)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CalculateTax", reflect.TypeOf((*MockTaxCSVService)(nil).CalculateTax), totalIncome, wht, donation)
 }
 
 // ImportCSV mocks base method.

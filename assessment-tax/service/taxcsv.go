@@ -11,7 +11,7 @@ import (
 
 type TaxCSVService interface {
 	ImportCSV(reader io.Reader) ([]map[string]float64, error)
-	CalculateTax(totalIncome, wht, donation, kReceipt float64) (float64, float64, error)
+	CalculateTax(totalIncome, wht, donation float64) (float64, float64, error)
 }
 
 type taxCSVService struct {
@@ -43,12 +43,12 @@ func (s *taxCSVService) ImportCSV(reader io.Reader) ([]map[string]float64, error
 			return nil, err
 		}
 
-		totalIncome, wht, donation, kReceipt, err := ParseFields(line)
+		totalIncome, wht, donation, err := ParseFields(line)
 		if err != nil {
 			return nil, err
 		}
 
-		taxPayable, taxRefund, err := s.CalculateTax(totalIncome, wht, donation, kReceipt) // Pass kReceipt as the fourth argument
+		taxPayable, taxRefund, err := s.CalculateTax(totalIncome, wht, donation)
 		if err != nil {
 			return nil, err
 		}
@@ -69,7 +69,7 @@ func (s *taxCSVService) ImportCSV(reader io.Reader) ([]map[string]float64, error
 	return taxes, nil
 }
 
-func (s *taxCSVService) CalculateTax(totalIncome, wht, donation, kReceipt float64) (float64, float64, error) {
+func (s *taxCSVService) CalculateTax(totalIncome, wht, donation float64) (float64, float64, error) {
 
 	config, err := s.adminSvc.GetConfig()
 	if err != nil {
@@ -78,10 +78,7 @@ func (s *taxCSVService) CalculateTax(totalIncome, wht, donation, kReceipt float6
 
 	personalAllowance := config.PersonalDeduction
 
-	taxableIncome := totalIncome - personalAllowance - donation - kReceipt
-	if kReceipt > config.KReceipt {
-		taxableIncome += kReceipt - config.KReceipt
-	}
+	taxableIncome := totalIncome - personalAllowance - donation
 
 	var tax float64
 	switch {
@@ -116,39 +113,32 @@ func (s *taxCSVService) CalculateTax(totalIncome, wht, donation, kReceipt float6
 	return taxPayable, taxRefund, nil
 }
 
-func ParseFields(fields []string) (float64, float64, float64, float64, error) {
-	var totalIncome, wht, donation, kReceipt float64
+func ParseFields(fields []string) (float64, float64, float64, error) {
+	var totalIncome, wht, donation float64
 	var err error
 
 	if len(fields) > 0 {
 		totalIncome, err = strconv.ParseFloat(strings.TrimSpace(fields[0]), 64)
 		if err != nil {
-			return 0, 0, 0, 0, err
+			return 0, 0, 0, err
 		}
 	}
 
 	if len(fields) > 1 {
 		wht, err = strconv.ParseFloat(strings.TrimSpace(fields[1]), 64)
 		if err != nil {
-			return 0, 0, 0, 0, err
+			return 0, 0, 0, err
 		}
 	}
 
 	if len(fields) > 2 {
 		donation, err = ParseDonation(strings.TrimSpace(fields[2]))
 		if err != nil {
-			return 0, 0, 0, 0, err
+			return 0, 0, 0, err
 		}
 	}
 
-	if len(fields) > 3 {
-		kReceipt, err = strconv.ParseFloat(strings.TrimSpace(fields[3]), 64)
-		if err != nil {
-			return 0, 0, 0, 0, err
-		}
-	}
-
-	return totalIncome, wht, donation, kReceipt, nil
+	return totalIncome, wht, donation, nil
 }
 
 func ParseDonation(donationStr string) (float64, error) {
